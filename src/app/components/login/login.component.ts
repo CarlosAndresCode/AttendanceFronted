@@ -1,18 +1,20 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators, ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { FormGroup, Validators, ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true, // ✅ importante para componentes standalone
   imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-
-  formLogin?: FormGroup;
+  formLogin: FormGroup;
 
   constructor(
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private authService: AuthService
   ) {
     this.formLogin = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -21,10 +23,18 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (this.formLogin?.valid) {
+    if (this.formLogin.valid) {
       const loginData = this.formLogin.value;
-      console.log('Login Data:', loginData);
-      // Here you would typically handle the login logic, e.g., call an authentication service
+      this.authService.login(loginData).subscribe({
+        next: (response) => {
+          console.log('Login successful:', response);
+        },
+        error: (error) => {
+          console.error('Login error:', error);
+        }
+      });
+
+      this.formLogin.reset();
     } else {
       console.log('Form is invalid');
     }
